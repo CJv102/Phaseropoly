@@ -4,24 +4,19 @@ export default class Player
 	{
 		this.scene = scene
 
-		this.playerTokenColors = [
+		this.tokenColors = [
 			['Pink',	'ff00ff'],
 			['Green',	'00ff00'],
 			['Red', 	'ff0000'],
 			['Blue', 	'0000ff'],
 		]
 
-
-		this.players = [
-
-		//	NAME 		COLOR 		POSITION
-
-			'Pink',		'ff00ff',	0,
-			'Green',	'00ff00',	0,
-		]
+		this.cash = startingCash
+		this.position = 0
+		this.properties = []
 	}
 
-	token()
+	tokens()
 	{
 		this.scene.add.circle(0, 0, 15, 0xff00ff)
 	}

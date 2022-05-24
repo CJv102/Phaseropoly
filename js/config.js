@@ -24,8 +24,8 @@ const gameConfig =
 	physics: {
 		default: 'arcade',
 			arcade: {
-			debug: true,// Never true on live game
-			debugShowVelocity: true,
+			debug: false,// Never true on live game
+			debugShowVelocity: false,// ditto
 			gravity: { y: 0 }
 		},
 	},
@@ -36,8 +36,12 @@ const gameConfig =
 
 } // gameConfig
 
+
+
 const currency = '£'
+const startingCash = 1500
 const goSquarePassValue = 200
+
 
 var players = {
 	active: 0,//Which players turn?
@@ -46,12 +50,12 @@ var players = {
 	max: 8
 }
 
-var player = {
-	token: 'gold',
-	cash: 0,
-	currentPos: 0,// 0 = Go, 39 = Mayfair
-	squaresOwned: [null],
-}
+// var player = {
+// 	token: 'gold',
+// 	cash: 0,
+// 	currentPos: 0,// 0 = Go, 39 = Mayfair
+// 	squaresOwned: [null],
+// }
 
 const gameLayers = {
 	board: 0,
