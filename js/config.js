@@ -1,17 +1,11 @@
-/*
-	config.js
-
-	Here we hold our Phaser config, and set up any other settings to be used in our game.
-*/
-
 const gameConfig = 
 {
 	type: Phaser.AUTO,
 	autoCenter: true,
 	
 	backgroundColor: "#000000",
-	width: 900,
-	height: 700,
+	width: 1000,
+	height: 900,
 
 	title: "Phaseropoly",
 	version: "0.9a",

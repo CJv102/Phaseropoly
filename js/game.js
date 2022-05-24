@@ -4,6 +4,7 @@ import TitleScene from './Scenes/TitleScene.js'
 import OptionsScene from './Scenes/OptionsScene.js'
 import InstructionScene from './Scenes/InstructionScene.js'
 import CreditScene from './Scenes/CreditScene.js'
+import PreGameScene from './Scenes/PreGameScene.js'
 import GameScene from './Scenes/GameScene.js'
 import Model from './model.js'
 
@@ -13,6 +14,7 @@ var titleScene = new TitleScene()
 var optionScene = new OptionsScene()
 var instructionScene = new InstructionScene()
 var creditScene = new CreditScene()
+var preGameScene = new PreGameScene()
 var gameScene = new GameScene()
 
 class Game extends Phaser.Game
@@ -28,6 +30,7 @@ class Game extends Phaser.Game
     this.scene.add('InstructionScene', instructionScene)
     this.scene.add("CreditScene", creditScene)
     this.scene.add('TitleScene', titleScene)
+    this.scene.add('PreGameScene', preGameScene)
     this.scene.add('GameScene', gameScene)
     this.scene.start('BootScene')
   }
