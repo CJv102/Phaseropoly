@@ -35,7 +35,8 @@ export default class TitleScene extends Phaser.Scene
 	            x: 150,
 	            y: 150,
 	            offset: 100
-	        },{
+	        },
+	        {
 	            targets: preText,
 	            x: 150,
 	            offset: 100

@@ -40,7 +40,10 @@ const gameConfig =
 
 const currency = '£'
 const startingCash = 1500
-const goSquarePassValue = 200
+const salary = 200
+
+// Does bank auction property if player does not purchase a property they land on?
+const allowAuction = false
 
 
 var players = {
@@ -50,18 +53,8 @@ var players = {
 	max: 8
 }
 
-// var player = {
-// 	token: 'gold',
-// 	cash: 0,
-// 	currentPos: 0,// 0 = Go, 39 = Mayfair
-// 	squaresOwned: [null],
-// }
 
-const gameLayers = {
-	board: 0,
-	squares: 1,
-	ui: 10
-}
+
 
 // Are we in a game?
 var gameActive = false

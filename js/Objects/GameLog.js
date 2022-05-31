@@ -19,6 +19,16 @@ export default class GameLog
 
 	create(msg)
 	{
+		// if (this.log.length < 1)
+		// {
+		// 	//this.log.push(`${this.timeString}||Logged On`)
+
+		// 	this.create('Loggerinismist')
+		// 	return
+		// }
+
+		msg = !msg ? `No Msg` : msg
+
 		let log = `${this.timeString}||${msg}`
 		this.log.push(log)
 		console.log(this.log)

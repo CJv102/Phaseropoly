@@ -10,7 +10,7 @@ export default class Dice
 
 
 	/*	----------------------------------------------------------------------
-		rollDice()
+		roll()
 		----------------------------------------------------------------------
 		
 		//return array[int, int]
@@ -19,7 +19,7 @@ export default class Dice
 		
 		----------------------------------------------------------------------
 	*/
-	rollDice()
+	roll()
 	{
 		let result = []
 		let d1 = Phaser.Math.Between(1, 6)
@@ -39,7 +39,9 @@ export default class Dice
 			// Go To Jail
 			console.log(`Rolled 3 Doubles, Player Goes To Jail`)
 		}
+
+		result = [d1, d2]
 		
-		//return result[d1, d2]
+		return result
 	}
 }

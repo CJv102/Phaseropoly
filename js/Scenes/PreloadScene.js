@@ -36,6 +36,9 @@ export default class PreloadScene extends Phaser.Scene
 	    this.load.image('checkedBox', './assets/images/ui/blue_boxCheckmark.png')
 		this.load.audio('bgMusic', ['./assets/sounds/TownTheme.mp3'])
 
+		// Go Arrow
+		this.load.image('goArrow', './assets/images/arrow.png')
+
 
 	} // preload()
 

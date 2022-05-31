@@ -40,9 +40,54 @@ export default class GameScene extends Phaser.Scene
 		// Create Board
 		this.Board.create(this)
 
-		this.Dice.rollDice(this)
+		// Xpos for game ui
+		let uiX = this.Board.boardHeight + 20
+
+		// UI text styling
+		let uiStyle = {
+			font: 'bold 16px Arial',
+			color: '#fff'
+		}
+		this.add.text(uiX, 20, `Players: ${players.count}`, uiStyle)
+
+
+
+		// Who goes 1st?
+		let playr = []
+		let tempBest
+		let theBest
+
+		for (let i=0; i<players.count; i++)
+		{
+			let arr = this.Dice.roll(this)
+			playr[i] = arr[0] + arr[1]
+
+			if (i===0)
+			{
+				tempBest = `Player ${i+1} with ${playr[i]}`
+			}
+			else 
+			{
+				if (playr[i] > tempBest)
+				{
+					theBest = `Player ${i+1} with ${playr[i]}`
+				}
+			}
+			//console.log(theBest)
+
+			this.add.text(uiX, 50 + (i*20), `Player ${i+1} Rolled: ${arr[0]} + ${arr[1]}`, uiStyle)
+		}
+		//let player1Dice = this.Dice.rollDice(this)
+		console.log(theBest)
+
+		
+
+		console.log(this.GameLog.log)
+
+		this.add.text(550, 60, `Log: ${this.GameLog.log[0]}`, {color: '#ffffff'})
 
 	} // create()
+
 
 	
 

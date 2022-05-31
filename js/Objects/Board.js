@@ -1,4 +1,6 @@
 import Cards from '../Objects/Cards.js'
+import TitleDeed from '../Objects/TitleDeed.js'
+import GameLog from '../Objects/GameLog.js'
 
 export default class Board
 {
@@ -84,11 +86,14 @@ export default class Board
 		// An array of all property tiles we can use further on through the game
 		this.propertySquares = [1, 3, 6, 8, 9, 11, 13, 14, 16, 18, 19, 21, 23, 24, 26, 27, 29, 31, 32, 34, 37, 39]
 
-		//this.propertyCardModal
 
+		// Init objects we will need
 		this.Cards = new Cards(this, this.squares)
+		this.GameLog = new GameLog(this)
+		this.TitleDeed = new TitleDeed(this, this.squares)
 
 	}
+
 
 
 
@@ -104,160 +109,147 @@ export default class Board
 	create()
 	{	
 
-		// Xpos for game ui
-		let uiX = this.boardHeight + 30
-		this.scene.add.text(uiX, 20, `Players: ${players.count}`, {color:'#fff'})
-
 		var innerBoard = this.scene.add.rectangle(this.boardHeight/2, this.boardHeight/2, 365*this.multiplier, 365*this.multiplier, 0xdddddd)
 
-		// Community Chest Deck Positions
-		var communtyChest = this.scene.add.rectangle(this.boardHeight/3.5, this.boardHeight/3.5, 80*this.multiplier, 50*this.multiplier, this.cardColor)
-			.setDepth(10)
-			.setAngle(-45)
-			.setInteractive({useHandCursor:true})
-			.on('pointerdown', ()=>{
-				let card = this.Cards.communityChestCard()
-				console.log(card)
-			})
+		this.GameLog.create()
 
-		var communtyChestText = this.scene.add.text(this.boardHeight/3.9 +40, this.boardHeight/3.9 - 10, 'Communty Chest', {color:'#000', fontSize:8})
-			.setDepth(11)
-			.setAngle(+135)
+		// Chance / Community Chest Decks
+		this.communityChestDeck()
+		this.chanceDeck()
 
-		// Chance Deck Position
-		var chance = this.scene.add.rectangle(this.boardHeight*.71, this.boardHeight*.71, 80*this.multiplier, 50*this.multiplier, this.cardColor)
-			.setDepth(10)
-			.setAngle(-45)
-			.setInteractive({useHandCursor:true})
-			.on('pointerdown', ()=>{
-				let card = this.Cards.chanceCard()
-				console.log(card)
-			})
+		// 	Create The Squares
+		this.createSquares()
 
-		var chanceText = this.scene.add.text(this.boardHeight*.71 - 10, this.boardHeight*.71 + 10, 'Chance', {color:'#000', fontSize:8})
-			.setDepth(11)
-			.setAngle(-45)
+		// Display property card on mouseover
+		// He we just create the shapes, we will position and setAlpha to 1 on mouseover
+		this.propertyCardModal = this.modalRectangle()
+		this.propertyCardModalBanner = this.modalBanner()
+		this.propertyCardModalTitleDeed = this.modalTitleDeed()
+		this.propertyCardModalSquareTitle = this.modalTitle()
+		this.propertyCardModalSquareCost = this.modalCost()
+
+	} // create()
 
 
-
-		// Display property card on mposeover
-		this.propertyCardModal = this.scene.add.rectangle(0,0, this.propertyCard.width*2, this.propertyCard.height*2, 0xffffff)
+	modalRectangle()
+	{
+		return this.scene.add.rectangle(0,0, this.propertyCard.width*2, this.propertyCard.height*2, 0xffffff)
 			.setStrokeStyle(2, 0x000000)
 			.setOrigin(0,0)
 			.setAlpha(0)
 			.setDepth(12)
+	}
 
-		this.propertyCardModalBanner = this.scene.add.rectangle(0,0, this.propertyCard.width*2 - 10, this.propertyCard.height/5)
+	modalBanner()
+	{
+		return this.scene.add.rectangle(0,0, this.propertyCard.width*2 - 10, this.propertyCard.height/5)
 			.setStrokeStyle(1, 0x000000)
 			.setOrigin(0,0)
 			.setAlpha(0)
 			.setDepth(12)
+	}
 
-		this.propertyCardModalTitleDeed = this.scene.add.text(0, 0, '', {font: 'bold 10px Arial', color: '#000'})
+	modalTitleDeed()
+	{
+		return this.scene.add.text(0, 0, '', {font: 'bold 10px Arial', color: '#000'})
 			.setOrigin(0,0)
 			.setAlpha(0)
 			.setDepth(13)
+	}
 
-		this.propertyCardModalSquareTitle = this.scene.add.text(0, 0, 'Square Title', {font: 'bold 12px Arial', color: '#000', wordWrap: {width: this.propertyCard.width*2 -10}})
+	modalTitle()
+	{
+		return this.scene.add.text(0, 0, 'Square Title', {font: 'bold 12px Arial', color: '#000', wordWrap: {width: this.propertyCard.width*2 -10}})
 			.setOrigin(0,0)
 			.setAlpha(0)
 			.setDepth(13)
+	}
 
-		this.propertyCardModalSquareCost = this.scene.add.text(0, 0, 'Square Cost', {font: 'bold 10px Arial', color: '#000'})
+	modalCost()
+	{
+		return this.scene.add.text(0, 0, 'Square Cost', {font: 'bold 10px Arial', color: '#000'})
 			.setOrigin(0,0)
 			.setAlpha(0)
-			.setDepth(13)
+			.setDepth(13)	
+	}
 
 
 
-		//////////////////////////
-		// 	Create The Squares
-
-		var xStr
-		var yStr 
-		var color
-		var str 
-		var thisSquare
-		var thisSquareID = 0//Reference to postion in this.squares
-
-		// Bottom Row
-		var go = this.createCornerTile((this.boardHeight-this.cornerSize) - this.cellMargin, (this.boardHeight-this.cornerSize) - this.cellMargin, thisSquareID)
-		thisSquareID++
-
-		for (let i=0; i<9; i++)
-		{
-			// xStr = ((this.boardHeight - this.cornerSize) - ((this.propertyWidth+1) * i) - this.propertyWidth)-3
-			// xStr = ((this.boardHeight - this.cornerSize) - ((this.propertyWidth+1) * i) - this.propertyWidth)-3
-			xStr = (((this.boardHeight - this.cornerSize) - this.tileBorderSize) - ((this.propertyWidth + this.tileBorderSize) * i)) - (this.propertyWidth )
-			yStr = (this.boardHeight - this.cellMargin) - this.cornerSize
-			thisSquare = this.createTile(xStr, yStr, thisSquareID, 0)
-			thisSquareID++
-		}
-
-
-		// Left Row
-		var jail = this.createCornerTile(this.tileBorderSize, this.boardHeight-this.cornerSize - this.tileBorderSize, thisSquareID)
-		thisSquareID++
-
-		for (let i=0; i<9; i++)
-		{
-			let xStr = 1 * this.multiplier
-			let yStr =  (((this.boardHeight - this.cornerSize) - this.tileBorderSize) - ((this.propertyWidth + this.cellMargin) * i)) - this.propertyWidth
-			thisSquare = this.createTile(xStr, yStr, thisSquareID, 1)
-			// this.createTileText(xStr+5, yStr+15, thisSquareID)
-			thisSquareID++
-		}
-
-
-		// Top Row
-		var freeParking = this.createCornerTile(1, 1, thisSquareID)
-		thisSquareID++
-
-		for (let i=0; i<9; i++)
-		{
-			let xStr = (this.cornerSize + this.cellMargin) + ((this.propertyWidth+this.cellMargin) * i)
-			let yStr = this.cellMargin
-			thisSquare = this.createTile(xStr, yStr, thisSquareID, 2)
-			// this.createTileText(xStr+5, yStr+20, thisSquareID)
-			thisSquareID++
-		}
-
-		// Right Row
-		var goToJail = this.createCornerTile(this.boardHeight-this.cornerSize - this.cellMargin, 1, thisSquareID)
-		thisSquareID++
-
-		for (let i=0; i<9; i++)
-		{
-			let xStr = this.boardHeight - (this.cornerSize + this.cellMargin)
-			let yStr = (this.cornerSize + this.cellMargin) + ((this.propertyWidth+this.cellMargin) * i)
-			thisSquare = this.createTile(xStr, yStr, thisSquareID, 3)
-			// this.createTileText(xStr+5, yStr+15, thisSquareID)
-			thisSquareID++
-		}
+	/*	----------------------------------------------------------------------
+		communityChestDeck()
+		----------------------------------------------------------------------
 		
-	} // create()
+		Create the community chest card deck
 
-
-	// The squares that need actions...
-	goSquare()
+		----------------------------------------------------------------------
+	*/
+	communityChestDeck()
 	{
-		console.log(`YO, GO!`)
+		var communityChest = this.scene.add.rectangle(this.boardHeight/3.5, this.boardHeight/3.5, 80*this.multiplier, 50*this.multiplier, this.cardColor)
+			.setDepth(1)
+			.setAngle(-45)
+			// .setInteractive({useHandCursor:true})
+			// .on('pointerover', ()=> {
+			// 	communityChest.setScale(1.1)
+			// }, this)
+			// .on('pointerout', ()=> {
+			// 	communityChest.setScale(1)
+			// }, this)
+			// .on('pointerdown', ()=>{
+			// 	let card = this.Cards.communityChestCard()
+			// 	console.log(card)
+			// }, this)
+
+		let style = {
+			font: 'bold 11px Arial', 
+			color:'#000',
+			align: 'center'
+		}
+		var communityChestText = this.scene.add.text(this.boardHeight/3.9 +50, this.boardHeight/3.9 + 5, `Community\n Chest`, style)
+			.setDepth(2)
+			.setAngle(+135)
 	}
 
-	communtyChestSquare()
-	{
 
-	}
 
-	incomeTaxSquare()
-	{
+
+	/*	----------------------------------------------------------------------
+		chanceDeck()
+		----------------------------------------------------------------------
 		
+		Create the chnace card deck
+
+		----------------------------------------------------------------------
+	*/
+	chanceDeck()
+	{
+
+		let chance = this.scene.add.rectangle(this.boardHeight*.71, this.boardHeight*.71, 80*this.multiplier, 50*this.multiplier, this.cardColor)
+			.setDepth(1)
+			.setAngle(-45)
+			// .setInteractive({useHandCursor:true})
+			// .on('pointerover', ()=> {
+			// 	chance.setScale(1.1)
+			// }, this)
+			// .on('pointerout', ()=> {
+			// 	chance.setScale(1)
+			// }, this)
+			// .on('pointerdown', ()=>{
+			// 	let card = this.Cards.chanceCard()
+			// 	console.log(card)
+			// }, this)
+		let style = {
+			font: 'bold 11px Arial', 
+			color:'#000',
+			align: 'center'
+		}
+		let chanceText = this.scene.add.text(this.boardHeight*.71 - 20, this.boardHeight*.71 + 5, 'Chance', style)
+			.setDepth(2)
+			.setAngle(-45)
 	}
 
-	superTaxSquare()
-	{
-		
-	}
+
+
 
 	/*	----------------------------------------------------------------------
 		propertyPointer(xStr, yStr, squareID)
@@ -274,7 +266,7 @@ export default class Board
 	propertyPointer(xStr, yStr, squareID)
 	{
 		this.propertyCardModal.setAlpha(1)
-		this.propertyCardModal.setFillStyle(`0xffffff`, 1)
+		this.propertyCardModal.setFillStyle(0xffffff, 1)
 		this.propertyCardModal.x = xStr
 		this.propertyCardModal.y = yStr
 
@@ -287,20 +279,21 @@ export default class Board
 		this.propertyCardModalSquareTitle.x = this.propertyCardModal.x + 5
 		this.propertyCardModalSquareTitle.y = yStr + 25
 
-		this.propertyCardModalSquareCost.setAlpha(1)
-
 		// Does this tile even have a price?
-		if (this.squares[squareID][2] != null) {
+		if (this.squares[squareID][2] != null)
+		{
 			this.propertyCardModalBanner.setAlpha(1)
 			this.propertyCardModalBanner.setFillStyle(`0x${this.squares[squareID][1]}`, 1)
 			this.propertyCardModalBanner.x = this.propertyCardModal.x + 5
 			this.propertyCardModalBanner.y = yStr + 5
 
+			this.propertyCardModalSquareCost.setAlpha(1)
 			this.propertyCardModalSquareCost.setText(`${currency + parseInt(this.squares[squareID][2])}`)
 			this.propertyCardModalSquareCost.x = this.propertyCardModal.x + 5
 			this.propertyCardModalSquareCost.y = yStr + 145
 		}
 	}
+
 
 
 
@@ -312,20 +305,15 @@ export default class Board
 		
 		----------------------------------------------------------------------
 	*/
-
 	propertyPointerRemove()
 	{
-		this.propertyCardModal.setFillStyle(0xffffff, 0)
 		this.propertyCardModal.setAlpha(0)
-
-		
-		this.propertyCardModalBanner.setFillStyle(0xffffff, 0)
 		this.propertyCardModalBanner.setAlpha(0)
-
 		this.propertyCardModalTitleDeed.setAlpha(0)
-		this.propertyCardModalSquareTitle.setAlpha(0)
-		this.propertyCardModalSquareCost.setAlpha(0)
+		this.propertyCardModalSquareTitle.setAlpha(0).setText(``)
+		this.propertyCardModalSquareCost.setAlpha(0).setText(``)
 	}
+
 
 
 
@@ -351,166 +339,286 @@ export default class Board
 
 
 
+
 	/*	----------------------------------------------------------------------
-		createTile(xStr, yStr, squareID, allign)
+		createTile(xStr, yStr, squareID, align)
 		----------------------------------------------------------------------
 
-		return an interactive tile.
+		return an interactive tile that displays card with the tiles info
 
 		----------------------------------------------------------------------
 		int xStr: x postion
 		int yStr: y potion
 		int squareID: position on board/in main squares array
-		enum allign: 0/1/2/3 (bottom/left/top/right)
+		enum align: 0/1/2/3 (bottom/left/top/right)
 		----------------------------------------------------------------------
 	*/
-	createTile(xStr, yStr, squareID, allign)
+	createTile(xStr, yStr, squareID, align)
 	{	
-		let width = (allign % 2 == 0) ? this.propertyWidth : this.cornerSize
-		let height = (allign % 2 == 0) ? this.cornerSize : this.propertyWidth
+		let width = (align % 2 == 0) ? this.propertyWidth : this.cornerSize
+		let height = (align % 2 == 0) ? this.cornerSize : this.propertyWidth
 
+		let modal
+
+		// The Tile
 		this.scene.add.rectangle(xStr, yStr, width, height, 0xffffff)
-			.setOrigin(0, 0)
+			.setOrigin(0)
 			.setStrokeStyle(this.tileBorderSize, this.tileBorderColor)
 			.setInteractive({useHandCursor:true})
-			.setDepth(10)
+			.setDepth(1)
 			.on('pointerover', (pointer)=>
-			{
+			{	
+				this.propertyPointerRemove()
+
 				// Position modal
-				let yPos
-				if (pointer.y < 30) yPos = 30
-				else if (pointer.y > this.boardHeight - 30) yPos = this.boardHeight - 150
-				else yPos = pointer.y
-				this.propertyPointer(xStr, yPos, squareID)
+				let xPos, yPos
+				switch (align)
+				{
+					case 0:
+						xPos = pointer.x 
+						yPos =  (this.boardHeight - this.cornerSize) - 50
+						break
+
+					case 1:
+						xPos = 20 
+						yPos = pointer.y
+						break
+
+					case 2:
+						xPos = pointer.x 
+						yPos = 20
+						break
+
+					case 3:
+						xPos = (this.boardHeight - this.cornerSize) - 20
+						yPos = pointer.y
+						break
+				}
+
+				modal = this.propertyPointer(xPos, yPos, squareID)
+
 			}, this)
 			.on('pointerout', ()=>{	
 				this.propertyPointerRemove()
 			}, this)
 
+		// Tile Text/Content
 
-			let titleStyle = {
-				font: '8px Arial', 
+		let titleStyle = {
+				font: '7px Arial', 
 				color: `#000`, 
+				// align: 'center',
 				wordWrap: {
 					width:this.propertyWidth - 5
 				},
 			}
 
-			let priceStyle = {
+		let priceStyle = {
 				font: 'bold 12px Arial', 
-				color: `#000`
+				color: `#000`,
+				// align: 'center',
 			}
-
-			// Title Text
-			let textTitle = this.scene.add.text(xStr, yStr, this.squares[squareID][0], titleStyle)
-				.setOrigin(0, 0)
-				.setDepth(11)
-
-			// Purchase Price Text
-			let textPrice = this.scene.add.text(xStr, yStr, this.squares[squareID][2], priceStyle)
-				.setOrigin(0, 0)
-				.setDepth(11)
-			
-			switch (allign)
-			{
-				case 0: 
-					textTitle.setAngle(0)
-						.setX(xStr + this.cornerSize*.05)
-						.setY(yStr + this.cornerSize*.25)
-					textPrice.setAngle(0)
-						.setX(xStr + this.cornerSize*.05)
-						.setY(yStr + this.cornerSize*.85)
-					break 
-
-				case 1:
-					textTitle.setAngle(90)
-						.setX(this.cornerSize*.8)
-						.setY(yStr + this.cornerSize*.05)
-					textPrice.setAngle(90)
-						.setX(xStr + this.cornerSize*.15)
-						.setY(yStr + this.cornerSize*.05)
-					break 
-
-				case 2:
-					textTitle.setAngle(180)
-						.setX(xStr + this.propertyWidth - 5)
-						.setY(this.cornerSize*.8)
-
-					textPrice.setAngle(180)
-						.setX(xStr + this.propertyWidth - 5)
-						.setY(this.cornerSize*.15)
-					break 
-
-				case 3:
-					textTitle.setAngle(-90)
-						.setX(this.boardHeight - (this.cornerSize*.8))
-						.setY((yStr + this.propertyWidth) - 5)
-					textPrice.setAngle(-90)
-						.setX(this.boardHeight - (this.cornerSize*.15))
-						.setY((yStr + this.propertyWidth) - 5)
-					break 
-			}
-
-
 			
 
-			// Do we need a property banner?
-			if (this.propertySquares.includes(squareID))
+		// Title
+		let textTitle = this.scene.add.text(xStr, yStr, this.squares[squareID][0], titleStyle)
+			.setOrigin(0, 0)
+			.setDepth(1)
+
+		// Purchase Price
+		let textPrice = this.scene.add.text(xStr, yStr, this.squares[squareID][2], priceStyle)
+			.setOrigin(0, 0)
+			.setDepth(1)
+		
+		// Set angle and xy position for title and  square price price
+		switch (align)
+		{
+			case 0: 
+				textTitle.setAngle(0)
+					.setX(xStr + this.cornerSize*.05)
+					.setY(yStr + this.cornerSize*.25)
+				textPrice.setAngle(0)
+					.setX(xStr + this.cornerSize*.05)
+					.setY(yStr + this.cornerSize*.85)
+				break 
+
+			case 1:
+				textTitle.setAngle(90)
+					.setX(this.cornerSize*.8)
+					.setY(yStr + this.cornerSize*.05)
+				textPrice.setAngle(90)
+					.setX(xStr + this.cornerSize*.15)
+					.setY(yStr + this.cornerSize*.05)
+				break 
+
+			case 2:
+				textTitle.setAngle(180)
+					.setX(xStr + this.propertyWidth - 5)
+					.setY(this.cornerSize*.8)
+				textPrice.setAngle(180)
+					.setX(xStr + this.propertyWidth - 5)
+					.setY(this.cornerSize*.15)
+				break 
+
+			case 3:
+				textTitle.setAngle(-90)
+					.setX(this.boardHeight - (this.cornerSize*.8))
+					.setY((yStr + this.propertyWidth) - 5)
+				textPrice.setAngle(-90)
+					.setX(this.boardHeight - (this.cornerSize*.15))
+					.setY((yStr + this.propertyWidth) - 5)
+				break 
+		}
+
+
+		// Do we need a property banner?
+		if (this.propertySquares.includes(squareID))
+		{
+			let x = xStr
+			let y = yStr
+
+			// Horizontal or vertical
+			switch (align)
 			{
-				let x = xStr
-				let y = yStr
+				case 1: x = (x + this.cornerSize) - this.cornerSize/5; break 
+				case 2: y = (y + this.cornerSize) - this.cornerSize/5; break
+			}
 
-				switch (allign)
-				{
-					case 1: x = (x + this.cornerSize) - this.cornerSize/5; break 
-					case 2: y = (y + this.cornerSize) - this.cornerSize/5; break
-				}
+			let width = (align % 2 == 0) ? this.propertyWidth : this.cornerSize/5
+			let height = (align % 2 == 0) ? this.cornerSize/5 : this.propertyWidth
 
-				let width = (allign % 2 == 0) ? this.propertyWidth : this.cornerSize/5
-				let height = (allign % 2 == 0) ? this.cornerSize/5 : this.propertyWidth
-
-				let ting = this.scene.add.rectangle(x, y, width, height, `0x${this.squares[squareID][1]}`)
+			this.scene.add.rectangle(x, y, width, height, `0x${this.squares[squareID][1]}`)
 				.setOrigin(0, 0)
 				.setStrokeStyle(this.tileBorderSize, this.tileBorderColor)
 				.setInteractive({useHandCursor:true})
-				.setDepth(11)
-			}
-	}
+				.setDepth(1)
+		}
+
+	} // createTile()
 
 
 
 	/*	----------------------------------------------------------------------
-		createTileText(xStr, yStr, squareID, allign)
+		createSquares()
 		----------------------------------------------------------------------
 
-		Return a text object
+		Create property squares
 
-		----------------------------------------------------------------------
-		int xStr: x postion
-		int yStr: y potion
-		int squareID: position on board/in main squares array
-		enum allign: 0/1/2/3 (bottom/left/top/right)
 		----------------------------------------------------------------------
 	*/
-	// createTileText(xStr, yStr, squareID, allign)
-	// {
-	// 	let style = {
-	// 		font: 'bold 10px Arial', 
-	// 		color: `#000000`, 
-	// 		wordWrap: {
-	// 			width:this.propertyWidth - 5
-	// 		},
-	// 	}
+	createSquares()
+	{
+		var xStr
+		var yStr 
+		var color
+		var str 
+		var thisSquare
+		var thisSquareID = 0//Reference to postion in this.squares
 
-	// 	// Title Text
-	// 	this.scene.add.text(xStr, yStr, this.squares[squareID][0], style)
-	// 		.setOrigin(0, 0)
-	// 		.setDepth(11)
+		///////////////
+		// Bottom Row
 
-	// 	// Purchase Price Text
-	// 	this.scene.add.text(xStr + 25, yStr + 25, this.squares[squareID][2], style)
-	// 		.setOrigin(0, 0)
-	// 		.setDepth(11)
-	// }
+		// GO Square
+		var go = this.createCornerTile((this.boardHeight-this.cornerSize) - this.cellMargin, (this.boardHeight-this.cornerSize) - this.cellMargin, thisSquareID)
 
-}// Board()
+		var goStyle = {
+				font: 'bold 37px Arial', 
+				color: `#000`, 
+				wordWrap: {
+					width:this.propertyWidth - 5
+				},
+			}
+		var goText = this.scene.add.text((this.boardHeight - this.cornerSize) + 15, (this.boardHeight - this.cornerSize) + 50, `GO`, goStyle)
+			.setOrigin(0, 0)
+			.setAngle(-45)
+
+		var arrow = this.scene.add.sprite((this.boardHeight - this.cornerSize) + 15, this.boardHeight - 20, 'goArrow')
+			.setOrigin(0, 0)
+			.setScale(0.5)
+
+		thisSquareID++
+
+		// The squares
+		for (let i=0; i<9; i++)
+		{
+			xStr = (((this.boardHeight - this.cornerSize) - this.tileBorderSize) - ((this.propertyWidth + this.tileBorderSize) * i)) - this.propertyWidth
+			yStr = (this.boardHeight - this.cellMargin) - this.cornerSize
+			thisSquare = this.createTile(xStr, yStr, thisSquareID, 0)
+			thisSquareID++
+		}
+
+
+		/////////////
+		// Left Row
+
+		// Jail / Just Visiting
+		var jail = this.createCornerTile(this.tileBorderSize, this.boardHeight-this.cornerSize - this.tileBorderSize, thisSquareID)
+		var jailSquare = this.scene.add.rectangle(66, this.boardHeight-66, 66, 66, 0xffa500)
+			.setDepth(1)
+			.setStrokeStyle(this.tileBorderSize, 0x000000)
+		thisSquareID++
+
+		var jailStyle = {font: 'bold 18px Arial', color: '#000'}
+		var jailText = this.scene.add.text(55, this.boardHeight-92, `In Jail`, jailStyle)
+			.setDepth(1)
+			.setAngle(45)
+
+		var justVisitingStyle = {font: 'bold 15px Arial', color: '#000'}
+		var justText = this.scene.add.text(25, this.boardHeight-82, `Just`, justVisitingStyle)
+			.setDepth(1)
+			.setAngle(90)
+
+		var visitingText = this.scene.add.text(40, this.boardHeight-25, `Visiting`, justVisitingStyle)
+			.setDepth(1)
+
+		// Bottom row squares
+		for (let i=0; i<9; i++)
+		{
+			let xStr = 1 * this.multiplier
+			let yStr =  (((this.boardHeight - this.cornerSize) - this.tileBorderSize) - ((this.propertyWidth + this.cellMargin) * i)) - this.propertyWidth
+			thisSquare = this.createTile(xStr, yStr, thisSquareID, 1)
+			thisSquareID++
+		}
+
+		/////////////
+		// Top Row
+		// Free Parking
+		var freeParking = this.createCornerTile(1, 1, thisSquareID)
+		var freeParkingStyle = {font: 'bold 15px Arial', color: '#000000'}
+		var freeParkingText = this.scene.add.text(90, 30, `Free Parking`, freeParkingStyle)
+			.setDepth(1)
+			.setAngle(135)
+		thisSquareID++
+
+		// Top row squares
+		for (let i=0; i<9; i++)
+		{
+			let xStr = (this.cornerSize + this.cellMargin) + ((this.propertyWidth+this.cellMargin) * i)
+			let yStr = this.cellMargin
+			thisSquare = this.createTile(xStr, yStr, thisSquareID, 2)
+			thisSquareID++
+		}
+
+		///////////////
+		// Right Row
+		// Go To Jail
+		var goToJail = this.createCornerTile(this.boardHeight-this.cornerSize - this.cellMargin, 1, thisSquareID)
+		var goToJailStyle = {font: 'bold 15px Arial', color: '#000000'}
+		var goToJailText = this.scene.add.text(this.boardHeight-20, 70, `Go To Jail`, goToJailStyle)
+			.setDepth(1)
+			.setAngle(-135)
+		thisSquareID++
+
+		// Right row squares
+		for (let i=0; i<9; i++)
+		{
+			let xStr = this.boardHeight - (this.cornerSize + this.cellMargin)
+			let yStr = (this.cornerSize + this.cellMargin) + ((this.propertyWidth+this.cellMargin) * i)
+			thisSquare = this.createTile(xStr, yStr, thisSquareID, 3)
+			thisSquareID++
+		}
+
+	} // createSquares()
+
+
+} // Board()
